@@ -1,10 +1,10 @@
 [tool.poetry]
 name = "megad-lib"
-version = "2.1.0"
+version = "2.1.1"
 description = ""
 authors = ["Your Name <you@example.com>"]
 readme = "README.md"
-packages = [{include = "megad"}]
+packages = [{include = "megad"}, {include = "utils.py"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
