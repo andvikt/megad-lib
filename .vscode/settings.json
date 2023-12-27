@@ -1,0 +1,23 @@
+{
+  "python.testing.pytestArgs": ["tests"],
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestEnabled": true,
+  "json.schemas": [
+    {
+      "fileMatch": ["/megad/parsers/i2c.json"],
+      "url": "/megad/parsers/i2c_schema.json"
+    },
+    {
+      "fileMatch": ["/i2c/i2c_sensors.json"],
+      "url": "/i2c/schema.json"
+    }
+  ],
+  "sqltools.connections": [
+    {
+      "previewLimit": 50,
+      "driver": "SQLite",
+      "name": "test",
+      "database": "${workspaceFolder:megad-lib}/test.sqlite"
+    }
+  ]
+}

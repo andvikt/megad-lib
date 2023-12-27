@@ -1,0 +1,90 @@
+[tool.poetry]
+name = "megad-lib"
+version = "2.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+packages = [{include = "megad"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+beautifulsoup4 = "^4"
+aiohttp = ">=1.1"
+pydantic = "<2"
+sqlalchemy = "^2.0.21"
+orjson = "^3.9.7"
+alembic = "^1.12.0"
+aiosqlite = "^0.19.0"
+intelhex = "^2.3.0"
+cashews = "^6.3.0"
+
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.0.291"
+mypy = "^1.5.1"
+pre-commit = "^3.4.0"
+black = "^23.9.1"
+types-beautifulsoup4 = "^4.12.0.6"
+httpx = "^0.25.0"
+aiohttp-devtools = "^1.1"
+aiohttp-debugtoolbar = "^0.6.0"
+
+
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.4.2"
+pytest-asyncio = "^0.21.1"
+coverage = "^7.3.4"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+
+[tool.black]
+color = true
+line-length = 120
+target-version = ["py310"]
+
+[tool.ruff]
+extend-select = [ "A", "B", "C4", "C90", "I", "Q", "PERF", "PT", "RUF100", "UP", "W"]
+line-length = 120
+src = ["megad"]
+exclude = [
+    "alembic",
+]
+ignore = [
+  "D100",
+  "D104",
+  "D415",
+  "RUF100",
+  "UP007",
+  "A003"
+]
+mccabe = { max-complexity = 14 }
+target-version = "py310"
+
+[tool.ruff.pydocstyle]
+convention = "google"
+
+[tool.mypy]
+exclude = 'alembic$'
+strict = true
+implicit_optional = true
+
+[tool.coverage.run]
+branch = true
+source_pkgs = ["app"]
+
+[tool.coverage.report]
+exclude_lines = [
+  "if __name__ == .__main__.:",
+  "if TYPE_CHECKING:",
+  "pragma: no cover",
+  "pragma: nocover",
+]
+#show_missing = true
+#skip_covered = true
+[tool.pytest.ini_options]
+xfail_strict = true
+
