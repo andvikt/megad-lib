@@ -1,6 +1,5 @@
 from collections.abc import AsyncIterable
 from io import StringIO
-from time import time
 
 import pytest
 import pytest_asyncio
@@ -18,7 +17,7 @@ async def test_scan() -> None:
 
 @pytest_asyncio.fixture
 async def mega() -> AsyncIterable[MegaD]:
-    _mega = MegaD(ip="192.168.88.15", password="sec2")
+    _mega = MegaD(ip="192.168.88.15", password="sec")
     # _mega = MegaD(ip="10.0.0.252", password="sec")
     yield _mega
     # await _mega._client.aclose()
@@ -27,6 +26,9 @@ async def mega() -> AsyncIterable[MegaD]:
 
 @pytest.mark.asyncio()
 async def test_get_config(mega: MegaD) -> None:
+    cfg_short = await mega.get_config(only_first=True)
+    assert isinstance(cfg_short.version_parsed, tuple)
+    assert len(cfg_short.version_parsed) == 3
     ret = await mega.get_config()
     assert ret.cf1 is not None
     print(mega.json(exclude={"_client"}))

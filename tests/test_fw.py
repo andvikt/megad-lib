@@ -1,5 +1,5 @@
 import pytest
-from megad.firmware.upgrade import get_fw
+from megad.firmware.upgrade import get_fw, get_fw_list
 from megad.scan import Upgrader
 
 
@@ -26,3 +26,9 @@ async def test_fw_a() -> None:
         fw = await get_fw(upgrader.chip_type or 2561, beta=False)
         await upgrader.earse_fw()
         await upgrader.write_fw(fw)
+
+
+@pytest.mark.asyncio()
+async def test_list_fw() -> None:
+    fw_list = await get_fw_list()
+    print(fw_list)

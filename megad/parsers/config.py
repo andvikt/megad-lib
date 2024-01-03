@@ -1,3 +1,4 @@
+import re
 import typing
 
 from bs4 import BeautifulSoup
@@ -10,6 +11,8 @@ from .tools import safe_int
 
 if typing.TYPE_CHECKING:
     from .base import BaseObject
+
+PATT_VER = re.compile(r"(\d+)\.(\d+)b(\d+)")
 
 
 class HtmlParser(
@@ -75,6 +78,12 @@ class Config(
     _parsed: set[str] = PrivateAttr(default_factory=set)
     _skipped: set[str] = PrivateAttr(default_factory=set)
     _next_paths: set[str] = PrivateAttr(default_factory=lambda: {"/"})
+
+    @property
+    def version_parsed(self) -> tuple[int, int, int]:
+        if m := PATT_VER.search(self.version):
+            return (int(m.group(1)), int(m.group(2)), int(m.group(3)))
+        raise ValueError("version not parsed")
 
     def add_parsed(self, path: str) -> None:
         p = path.removeprefix(f"/{self.password}")
