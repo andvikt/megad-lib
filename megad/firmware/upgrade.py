@@ -57,13 +57,16 @@ PATT_DT = re.compile(r"(\d{2}\.\d{2}\.\d{4})")
 PATT_VER = re.compile(r"ver (\d+)\.(\d+) beta(\d+)")
 PATT_DESC = re.compile(r'<br>(.*?)<a href="/files/', re.DOTALL)
 
+Version = tuple[int, int, int]
+
 
 class FW(BaseModel):
     url: str
-    ver: tuple[int, int, int]
+    ver: Version
     dt: datetime
     desc: str
     eeprom: bool
+    read_more_url: str
 
 
 async def get_fw_list() -> list[FW]:
@@ -101,6 +104,12 @@ async def get_fw_list() -> list[FW]:
         url = link.find("a", href=lambda x: x and x.endswith("-hex.zip"))
         if not isinstance(url, Tag):
             raise ValueError("no fw url")
+        read_more_url = ""
+        if rm := link.find("a", string="Подробнее"):
+            if isinstance(rm, Tag):
+                read_more_url = rm.attrs["href"]
+        if read_more_url:
+            desc += f" [Подробнее](https://ab-log.ru{read_more_url})"
         eeprom = "EEPROM" in desc
         r.append(
             FW(
@@ -109,6 +118,70 @@ async def get_fw_list() -> list[FW]:
                 dt=dt,
                 desc=desc,
                 eeprom=eeprom,
+                read_more_url=read_more_url,
             )
         )
     return r
+
+
+class FwUpgradeSummary(BaseModel):
+    desc_md: str
+    need_reset: bool
+
+
+def get_nearest_index(
+    fw_list: list[FW],
+    ver: Version,
+) -> tuple[bool, int]:
+    change = False
+    for i, fw in enumerate(fw_list):
+        if fw.ver >= ver:
+            return change, i
+        change = True
+    raise KeyError(ver)
+
+
+def get_upgrade_summary(
+    fw_list: list[FW],
+    current_version: Version,
+    target_version: Version,
+    full_desc: bool = False,
+) -> FwUpgradeSummary:
+    fw_dict = {x.ver: i for i, x in enumerate(fw_list)}
+    need_reset = False
+    desc: list[str] = []
+    if current_version < target_version:
+        # up
+        _, beg = get_nearest_index(fw_list, current_version)
+        end = fw_dict[target_version]
+        for fw in fw_list[beg : end + 1]:
+            if full_desc:
+                desc.append(f"## {fw.dt.strftime('%d.%m.%Y')}: {fw.ver[0]}.{fw.ver[1]} beta{fw.ver[2]}\n\n{fw.desc}")
+            else:
+                desc.append(fw.desc)
+            if fw.eeprom:
+                need_reset = True
+    elif current_version > target_version:
+        beg = fw_dict[target_version]
+        _, end = get_nearest_index(fw_list, current_version)
+        # desc"# Downgrade\n\n"
+        for fw in reversed(fw_list[beg : end + 1]):
+            if full_desc:
+                desc.append(f"## {fw.dt.strftime('%d.%m.%Y')}: {fw.ver[0]}.{fw.ver[1]} beta{fw.ver[2]}\n\n{fw.desc}")
+            else:
+                desc.append(fw.desc)
+            if fw.eeprom:
+                need_reset = True
+    desc_md = f"# {'.'.join(map(str, current_version))} -> {'.'.join(map(str, target_version))}\n\n"
+    if need_reset:
+        desc_md += (
+            "# ВНИМАНИЕ! Данное обновление требует обязательного сброса eeprom.\n\n"
+            "В процессе обновления будет создана резервная копия, "
+            "произведен сброс, затем восстановление из резервной копии после успешного обновления.\n\n"
+        )
+    desc_md += "## список изменений:\n\n"
+    desc_md += "\n".join(desc[::-1])
+    return FwUpgradeSummary(
+        desc_md=desc_md,
+        need_reset=need_reset,
+    )

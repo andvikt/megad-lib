@@ -1,5 +1,9 @@
+from collections.abc import AsyncIterable
+
 import pytest
-from megad.firmware.upgrade import get_fw, get_fw_list
+import pytest_asyncio
+from megad.core import MegaD
+from megad.firmware.upgrade import get_fw, get_fw_list, get_upgrade_summary
 from megad.scan import Upgrader
 
 
@@ -32,3 +36,23 @@ async def test_fw_a() -> None:
 async def test_list_fw() -> None:
     fw_list = await get_fw_list()
     print(fw_list)
+
+
+@pytest_asyncio.fixture
+async def mega() -> AsyncIterable[MegaD]:
+    _mega = MegaD(ip="192.168.88.14", password="sec")
+    yield _mega
+    await _mega.close()
+
+
+@pytest.mark.asyncio()
+async def test_up_summary(mega: MegaD) -> None:
+    cfg = await mega.get_config(only_first=True)
+    fw_list = await get_fw_list()
+    fw_list.sort(key=lambda x: x.ver)
+    sm = get_upgrade_summary(
+        fw_list,
+        cfg.version_parsed,
+        fw_list[-1].ver,
+    )
+    print(sm.desc_md)
