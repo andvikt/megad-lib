@@ -1,5 +1,7 @@
+from contextlib import AbstractAsyncContextManager
 from functools import cached_property
-from typing import IO, Any
+from types import TracebackType
+from typing import IO, Any, Self
 
 from aiohttp import TCPConnector
 from aiohttp.client import ClientSession
@@ -19,6 +21,7 @@ def _clean_nones(d: dict[str, Any]) -> dict[str, Any]:
 
 class MegaD(
     BaseModel,
+    AbstractAsyncContextManager["MegaD"],
 ):
     class Config:
         keep_untouched = (cached_property,)
@@ -32,6 +35,18 @@ class MegaD(
     new_naming: bool = True
 
     cfg: Cfg = Field(default_factory=lambda: Cfg(cf1=None, cf2=None))
+
+    async def __aenter__(self) -> Self:
+        return self
+
+    async def __aexit__(
+        self,
+        __exc_type: type[BaseException] | None,
+        __exc_value: BaseException | None,
+        __traceback: TracebackType | None,
+    ) -> bool | None:
+        await self.close()
+        return None
 
     @cached_property
     def _client(self) -> ClientSession:
