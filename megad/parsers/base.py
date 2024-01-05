@@ -50,7 +50,7 @@ class BaseObject(metaclass=BaseObjectMeta):
 
     @cached_property
     def bs(self) -> BeautifulSoup:
-        return BeautifulSoup(self.html)
+        return BeautifulSoup(self.html, features="lxml")
 
     @cached_property
     def id_suffix(self) -> str | None:
@@ -209,7 +209,7 @@ class BaseI2C(BaseObject):
                     )
                     yield s
         # SCAN for more sensors
-        scan = BeautifulSoup(await self.mega.get(pt=self.port, cmd="scan"))
+        scan = BeautifulSoup(await self.mega.get(pt=self.port, cmd="scan"), features="lxml")
         devs: set[str] = set()
         # сначала формируем список i2c_dev
         for a in scan.find_all("a"):

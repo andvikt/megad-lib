@@ -86,7 +86,7 @@ async def get_fw_list() -> list[FW]:
             ssl_context=sslcontext,
         ) as req:
             ret = await req.text()
-    d = BeautifulSoup(ret).find("div", class_="cnt")
+    d = BeautifulSoup(ret, features="lxml").find("div", class_="cnt")
     if d is None:
         raise ValueError("empty response")
     dd = d.find("ul")

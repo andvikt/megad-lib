@@ -29,7 +29,7 @@ class HtmlParser(
 
     @cached_property
     def bs(self) -> BeautifulSoup:
-        return BeautifulSoup(self.html)
+        return BeautifulSoup(self.html, features="lxml")
 
 
 class Cf1(HtmlParser):

@@ -28,7 +28,7 @@ async def parse_pt(mega: "MegaD", path: str, data: str) -> None:
 
 @parser("/")
 async def parse_main(mega: "MegaD", path: str, data: str) -> None:
-    tree = BeautifulSoup(data)
+    tree = BeautifulSoup(data, features="lxml")
     cfg = mega.cfg
     if m := PATT_FW.search(data):
         cfg.version = m.group(1)
@@ -71,7 +71,7 @@ async def parse_cf2(mega: "MegaD", path: str, data: str) -> None:
 
 @parser(re.compile(r"^\/\?cf=\d$"))
 async def parse_cf(mega: "MegaD", path: str, data: str) -> None:
-    tree = BeautifulSoup(data)
+    tree = BeautifulSoup(data, features="lxml")
     cfg = mega.cfg
     for e in tree.find_all("a"):
         if isinstance(e, Tag):

@@ -78,7 +78,7 @@ async def _back_page(mega: "MegaD", fh: typing.IO[str], page_param: str, i: int,
     page = await mega.get(f"/?{page_param}")
     page = page.replace("<<", "<")
 
-    soup = BeautifulSoup(page)
+    soup = BeautifulSoup(page, features="lxml")
     url = ""
 
     for inp in soup.find_all("input"):
