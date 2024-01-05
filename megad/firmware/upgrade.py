@@ -1,6 +1,6 @@
 import re
 import ssl
-from datetime import datetime
+from datetime import datetime, timedelta
 from io import StringIO
 
 import aiohttp
@@ -69,7 +69,15 @@ class FW(BaseModel):
     read_more_url: str
 
 
+_last_update: datetime | None = None
+_cache_list: list[FW] | None = None
+_cache_ttl = timedelta(hours=24)
+
+
 async def get_fw_list() -> list[FW]:
+    global _cache_list, _last_update
+    if _cache_list is not None and _last_update is not None and (datetime.now() - _last_update) <= _cache_ttl:
+        return _cache_list
     async with aiohttp.ClientSession() as cl:
         async with cl.request(
             "get",
@@ -121,6 +129,9 @@ async def get_fw_list() -> list[FW]:
                 read_more_url=read_more_url,
             )
         )
+    r.sort(key=lambda x: x.ver)
+    _cache_list = r
+    _last_update = datetime.now()
     return r
 
 

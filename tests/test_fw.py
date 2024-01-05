@@ -49,7 +49,6 @@ async def mega() -> AsyncIterable[MegaD]:
 async def test_up_summary(mega: MegaD) -> None:
     cfg = await mega.get_config(only_first=True)
     fw_list = await get_fw_list()
-    fw_list.sort(key=lambda x: x.ver)
     sm = get_upgrade_summary(
         fw_list,
         cfg.version_parsed,
